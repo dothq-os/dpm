@@ -1,0 +1,13 @@
+name: dpm
+version: "0.1.0-testing"
+author: TrickyPR
+about: "Install applications on DotOS - concept testing"
+subcommands:
+  - local-install:
+      about: Install a .deb package
+      version: "1.0"
+      args:
+        - PATH:
+            help: Path to .deb package
+            required: true
+            index: 1
