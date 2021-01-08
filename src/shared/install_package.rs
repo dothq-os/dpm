@@ -15,10 +15,7 @@ pub fn install(file: &Deb) -> Result<(), Error> {
     let options = ScriptOptions::new();
 
     install_paths.into_iter().for_each(|pi| {
-        commands += &format!(
-            "mkdir -p \"{}\" && cp \"{}\" \"{}\"\n",
-            &pi.move_to, &pi.real, &pi.move_to
-        )
+        commands += &format!("rsync --mkpath \"{}\" \"{}\"\n", &pi.real, &pi.move_to)
     });
 
     let _ = run_script::run(&commands, &vec![], &options).unwrap();
