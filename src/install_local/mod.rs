@@ -1,4 +1,4 @@
-use std::io::{Error, Write};
+use std::io::Error;
 
 use byte_unit::Byte;
 use deb_rs::file::Deb;

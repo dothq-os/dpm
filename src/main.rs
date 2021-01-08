@@ -1,7 +1,4 @@
 #[macro_use]
-extern crate byte_unit;
-
-#[macro_use]
 extern crate clap;
 use clap::App;
 
@@ -9,7 +6,6 @@ mod install_local;
 mod shared;
 
 use install_local::install_local;
-use shared::*;
 
 fn main() {
     let yaml = load_yaml!("cli.yaml");
