@@ -16,7 +16,7 @@ pub fn install(file: &Deb) -> Result<(), Error> {
 
     install_paths.into_iter().for_each(|pi| {
         commands += &format!(
-            "rsync --mkpath \"{}\" \"{}\" --delete\n",
+            "rsync --mkpath \"{}\" \"{}\" -r --delete\n",
             &pi.real, &pi.move_to
         )
     });
