@@ -18,7 +18,11 @@ pub fn install(file: &Deb) -> Result<(), Error> {
         commands += &format!("rsync --mkpath \"{}\" \"{}\"\n", &pi.real, &pi.move_to)
     });
 
-    let _ = run_script::run(&commands, &vec![], &options).unwrap();
+    let (code, output, error) = run_script::run(&commands, &vec![], &options).unwrap();
+
+    println!("Exit Code: {}", code);
+    println!("Output: {}", output);
+    println!("Error: {}", error);
 
     Ok(())
 }
