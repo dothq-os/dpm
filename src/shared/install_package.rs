@@ -1,4 +1,4 @@
-use std::io::Error;
+use std::{io::Error, path::Path};
 
 use run_script::ScriptOptions;
 
@@ -15,9 +15,11 @@ pub fn install(file: &Deb) -> Result<(), Error> {
     let options = ScriptOptions::new();
 
     install_paths.into_iter().for_each(|pi| {
+        let parent_dir = Path::new(&pi.move_to).parent().unwrap().to_str().unwrap();
+
         commands += &format!(
             "rm -f {} && rsync --mkpath \"{}\" \"{}\" -r --delete\n",
-            &pi.move_to, &pi.real, &pi.move_to
+            &pi.move_to, &pi.real, &parent_dir
         )
     });
 

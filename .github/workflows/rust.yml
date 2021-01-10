@@ -27,6 +27,14 @@ jobs:
       - name: Run tests
         run: cargo test --verbose
 
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - uses: codecov/codecov-action@v1
+
   artifact-build:
     name: Build artifact
     runs-on: ubuntu-latest
