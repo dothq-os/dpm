@@ -3,6 +3,17 @@ version: "0.1.0-testing"
 author: TrickyPR
 about: "Install applications on DotOS - concept testing"
 subcommands:
+  - search:
+      about: Search the Debian package repos
+      version: "1.0"
+      args:
+        - QUERY:
+            help: The search query
+            required: true
+            index: 1
+  - sync:
+      about: Syncs the package lists from the debian repositories
+      version: "1.0"
   - local-install:
       about: Install a .deb package
       version: "1.0"

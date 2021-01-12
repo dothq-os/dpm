@@ -20,8 +20,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up rust nightly
-        run: rustup override set nightly
       - name: Build
         run: cargo build --verbose
       - name: Run tests
