@@ -1,17 +1,17 @@
 use chrono::{DateTime, Duration, NaiveDate, Utc};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::io::{Error, Read};
+use std::io::Read;
 use xz2::read::XzDecoder;
 
-use crate::shared::DataStore;
+mod types;
+
+use crate::shared::{deb_control::control_from_string, DataStore};
+use types::Package;
 
 const DEBIAN_VERSION: &str = "experimental";
 const MIRROR: &str = "https://mirror.aarnet.edu.au/pub/debian/";
 const ARCH: &str = "amd64";
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-struct Package {}
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct PackageCache {
@@ -22,7 +22,7 @@ pub struct PackageCache {
 }
 
 impl PackageCache {
-    pub async fn init() -> Result<Self, Error> {
+    pub async fn init() -> Result<Self, Box<dyn std::error::Error>> {
         let cache_time = Duration::hours(-1);
 
         let default = PackageCache {
@@ -33,18 +33,20 @@ impl PackageCache {
         };
 
         let package_cache = DataStore::new("repo_cache", &default)?;
+        let mut package_cache = package_cache.data;
 
         let diff = {
             let now = Utc::now();
-            package_cache.data.time_stamp.signed_duration_since(now)
+            package_cache.time_stamp.signed_duration_since(now)
         };
 
         if diff < cache_time {
             // Generate package cache
-            package_cache.data.sync_packages().await.unwrap();
+            let (main, contrib, non_free) = package_cache.download_packages().await.unwrap();
+            package_cache.parse_controls(main, contrib, non_free)?;
         }
 
-        Ok(package_cache.data)
+        Ok(package_cache)
     }
 
     async fn download_bytes(
@@ -57,7 +59,9 @@ impl PackageCache {
     /**
      * Syncs the package cache with the debian package cache
      */
-    pub async fn sync_packages(&self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn download_packages(
+        &self,
+    ) -> Result<(String, String, String), Box<dyn std::error::Error>> {
         //* Download package lists
 
         // Shared client to improve performance
@@ -103,7 +107,18 @@ impl PackageCache {
         let mut non_free = String::new();
         decompressor.read_to_string(&mut non_free)?;
 
-        //* Parse package lists
+        Ok((main, contrib, non_free))
+    }
+
+    pub fn parse_controls<'a>(
+        &mut self,
+        main: String,
+        contrib: String,
+        non_free: String,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let main_control = control_from_string(main)?;
+        let contrib_control = control_from_string(contrib)?;
+        let non_free_control = control_from_string(non_free)?;
 
         Ok(())
     }
