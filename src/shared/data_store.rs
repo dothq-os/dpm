@@ -20,7 +20,7 @@ impl<T: Serialize + DeserializeOwned + Clone> DataStore<T> {
             panic!("{} already exists as a directory", path.to_str().unwrap());
         }
 
-        let mut data;
+        let data;
 
         if path.exists() {
             let file = File::open(&path)?;
