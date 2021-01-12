@@ -9,7 +9,7 @@ mod shared;
 use commands::{install_local, sync};
 
 #[tokio::main]
-pub async fn main() {
+pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let yaml = load_yaml!("cli.yaml");
     let mut app = App::from_yaml(yaml);
     let matches = app.clone().get_matches();
@@ -17,14 +17,14 @@ pub async fn main() {
     match matches.subcommand_name() {
         Some("local-install") => {
             let path = matches.value_of("PATH").unwrap().to_string();
-            install_local(path).unwrap();
+            install_local(path)?;
         }
 
         Some("search") => {
             let _query = matches.value_of("QUERY").unwrap();
         }
 
-        Some("sync") => sync().await.unwrap(),
+        Some("sync") => sync().await?,
 
         Some(_) => {
             println!("Unknown command. Use --help for a list fo commands");
@@ -33,10 +33,5 @@ pub async fn main() {
         None => app.print_help().unwrap(),
     }
 
-    if let Some(matches) = matches.subcommand_matches("local-install") {
-        if matches.is_present("PATH") {
-            let path = matches.value_of("PATH").unwrap().to_string();
-            install_local(path).unwrap();
-        }
-    }
+    Ok(())
 }

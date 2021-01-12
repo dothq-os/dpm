@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 # Debian related packages
-deb-rs = { git = "https://github.com/trickypr/deb-rs", features = ["serde"] }
+deb-rs = { git = "https://github.com/trickypr/deb-rs", branch = "main", features = ["serde"] }
 debcontrol = "0.1.1"
 
 # CLI packages
