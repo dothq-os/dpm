@@ -31,7 +31,20 @@ jobs:
     needs: [build]
 
     steps:
-      - uses: codecov/codecov-action@v1
+      - uses: actions/checkout@v2
+      - name: Setup rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
+      - uses: mbrobbel/rustfmt-check@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   artifact-build:
     name: Build artifact
