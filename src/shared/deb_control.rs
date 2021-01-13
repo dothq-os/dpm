@@ -1,5 +1,6 @@
 use debcontrol::parse_str;
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct Field {
     pub name: String,
     pub value: String,
@@ -14,8 +15,9 @@ impl Field {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct Paragraph {
-    fields: Vec<Field>,
+    pub fields: Vec<Field>,
 }
 
 impl Paragraph {

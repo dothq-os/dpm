@@ -1,7 +1,10 @@
 use bincode;
-use chrono::Duration;
 use serde::{de::DeserializeOwned, Serialize};
-use std::{fs::File, io::Error, path::PathBuf};
+use std::{
+    fs::{create_dir_all, File},
+    io::Error,
+    path::{Path, PathBuf},
+};
 
 const STORAGE_PATH: &str = "/var/cache/dpm/";
 
@@ -34,5 +37,15 @@ impl<T: Serialize + DeserializeOwned + Clone> DataStore<T> {
             data,
             path_str,
         })
+    }
+
+    pub fn update(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let parent_dir = Path::new(&self.path).parent().unwrap();
+        create_dir_all(parent_dir)?;
+
+        let file = File::create(&self.path)?;
+        bincode::serialize_into(file, &self.data)?;
+
+        Ok(())
     }
 }

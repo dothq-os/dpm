@@ -22,7 +22,9 @@ pub struct PackageCache {
 }
 
 impl PackageCache {
-    pub async fn init() -> Result<Self, Box<dyn std::error::Error>> {
+    pub async fn with_datastore(
+        should_sync: bool,
+    ) -> Result<DataStore<Self>, Box<dyn std::error::Error>> {
         let cache_time = Duration::hours(-1);
 
         let default = PackageCache {
@@ -32,21 +34,24 @@ impl PackageCache {
             non_free: vec![],
         };
 
-        let package_cache = DataStore::new("repo_cache", &default)?;
-        let mut package_cache = package_cache.data;
+        let mut package_cache_ds = DataStore::new("repo_cache", &default)?;
+        let package_cache = &mut package_cache_ds.data;
 
         let diff = {
             let now = Utc::now();
             package_cache.time_stamp.signed_duration_since(now)
         };
 
-        if diff < cache_time {
+        if should_sync && diff < cache_time {
             // Generate package cache
-            let (main, contrib, non_free) = package_cache.download_packages().await.unwrap();
-            package_cache.parse_controls(main, contrib, non_free)?;
+            package_cache.sync_package_cache().await?;
         }
 
-        Ok(package_cache)
+        Ok(package_cache_ds)
+    }
+
+    pub async fn without_datastore(should_sync: bool) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(PackageCache::with_datastore(should_sync).await?.data)
     }
 
     async fn download_bytes(
@@ -54,6 +59,13 @@ impl PackageCache {
         path: &str,
     ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
         Ok(client.get(path).send().await?.bytes().await?.to_vec())
+    }
+
+    pub async fn sync_package_cache(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+        let (main, contrib, non_free) = self.download_packages().await.unwrap();
+        self.parse_controls(main, contrib, non_free)?;
+
+        Ok(())
     }
 
     /**
@@ -119,6 +131,21 @@ impl PackageCache {
         let main_control = control_from_string(main)?;
         let contrib_control = control_from_string(contrib)?;
         let non_free_control = control_from_string(non_free)?;
+
+        self.main = main_control
+            .into_iter()
+            .map(|par| Package::from_paragraph(par).unwrap())
+            .collect();
+
+        self.contrib = contrib_control
+            .into_iter()
+            .map(|par| Package::from_paragraph(par).unwrap())
+            .collect();
+
+        self.non_free = non_free_control
+            .into_iter()
+            .map(|par| Package::from_paragraph(par).unwrap())
+            .collect();
 
         Ok(())
     }
