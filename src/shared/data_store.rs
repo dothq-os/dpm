@@ -1,4 +1,3 @@
-use bincode;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{
     fs::{create_dir_all, File},

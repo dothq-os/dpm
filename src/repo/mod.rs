@@ -122,7 +122,7 @@ impl PackageCache {
         Ok((main, contrib, non_free))
     }
 
-    pub fn parse_controls<'a>(
+    pub fn parse_controls(
         &mut self,
         main: String,
         contrib: String,

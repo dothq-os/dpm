@@ -30,7 +30,10 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Unknown command. Use --help for a list fo commands");
         }
 
-        None => app.print_help().unwrap(),
+        None => {
+            app.print_help().unwrap();
+            println!();
+        }
     }
 
     Ok(())
